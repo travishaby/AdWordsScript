@@ -15,6 +15,7 @@ class AdWordScript
     @word_banks = {}
     @output_data = {unsorted: []}
     setup
+    check_dictionaries_and_assign_to_categories
   end
 
   def setup
@@ -26,29 +27,31 @@ class AdWordScript
       @output_data[header] = []
     end
   end
-end
 
-ad = AdWordScript.new(ad_words_input, word_bank_data)
-
-ad.ad_words_input.each do |ad_words|
-  current_words = ad_words.first.split(" ")
-  remaining = current_words.clone
-  until remaining == []
-    ad.word_banks.each do |type, ad_phrases|
-      if ad_phrases.include?(current_words.join(" "))
-        ad.output_data[type] = ad.output_data[type] << current_words.join(" ")
-        remaining = remaining - current_words
-        current_words = remaining.clone
+  def check_dictionaries_and_assign_to_categories
+    @ad_words_input.each do |ad_words|
+      current_words = ad_words.first.split(" ")
+      remaining = current_words.clone
+      until remaining == []
+        @word_banks.each do |type, ad_phrases|
+          if ad_phrases.include?(current_words.join(" "))
+            @output_data[type] = @output_data[type] << current_words.join(" ")
+            remaining = remaining - current_words
+            current_words = remaining.clone
+          end
+        end
+        if current_words.length == 1 #put unclassified single words in unsorted
+          @output_data[:unsorted] = @output_data[:unsorted] + current_words
+          remaining = []
+        else
+          current_words.pop
+        end
       end
-    end
-    if current_words.length == 1 #put unclassified single words in unsorted
-      ad.output_data[:unsorted] = ad.output_data[:unsorted] + current_words
-      remaining = []
-    else
-      current_words.pop
     end
   end
 end
+
+ad = AdWordScript.new(ad_words_input, word_bank_data)
 
 ad.output_data = ad.output_data.each { |cat, group| ad.output_data[cat] = group.uniq }
 
