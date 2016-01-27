@@ -13,7 +13,7 @@ class AdWordScript
     @output_data = {unsorted: []}
     setup
     check_dictionaries_and_assign_to_categories
-    remove_duplicates
+    remove_column_duplicates
   end
 
   def setup
@@ -30,25 +30,29 @@ class AdWordScript
     @ad_words_input.each do |ad_words|
       current_words = ad_words.first.split(" ")
       remaining = current_words.clone
-      until remaining == []
-        @word_banks.each do |type, ad_phrases|
-          if ad_phrases.include?(current_words.join(" "))
-            @output_data[type] = @output_data[type] << current_words.join(" ")
-            remaining = remaining - current_words
-            current_words = remaining.clone
-          end
+      categorize_words(current_words, remaining)
+    end
+  end
+
+  def categorize_words(current_words, remaining)
+    until remaining == []
+      @word_banks.each do |type, ad_phrases|
+        if ad_phrases.include?(current_words.join(" "))
+          @output_data[type] = @output_data[type] << current_words.join(" ")
+          remaining = remaining - current_words
+          current_words = remaining.clone
         end
-        if current_words.length == 1 #put unclassified single words in unsorted
-          @output_data[:unsorted] = @output_data[:unsorted] + current_words
-          remaining = []
-        else
-          current_words.pop
-        end
+      end
+      if current_words.length == 1 #put unclassified single words in unsorted
+        @output_data[:unsorted] = @output_data[:unsorted] + current_words
+        remaining = []
+      else
+        current_words.pop
       end
     end
   end
 
-  def remove_duplicates
+  def remove_column_duplicates
     @output_data.each { |cat, group| @output_data[cat] = group.uniq }
   end
 
