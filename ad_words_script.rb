@@ -18,7 +18,7 @@ class AdWordScript
 
   def setup
     @word_bank_data.headers.each do |header|
-      @word_banks[header] = @word_bank_data[header].compact.map { |phrase| phrase.downcase }
+      @word_banks[header] = @word_bank_data[header].compact.map(&:downcase)
     end
 
     @word_bank_data.headers.each do |header|
