@@ -49,7 +49,7 @@ class AdWordScript
   end
 
   def remove_duplicates
-    @output_data = @output_data.each { |cat, group| @output_data[cat] = group.uniq }
+    @output_data.each { |cat, group| @output_data[cat] = group.uniq }
   end
 end
 
