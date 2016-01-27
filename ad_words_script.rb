@@ -51,6 +51,19 @@ class AdWordScript
   def remove_duplicates
     @output_data.each { |cat, group| @output_data[cat] = group.uniq }
   end
+
+  def write_to_csv(file_name)
+    CSV.open(file_name, 'w', headers: true) do |csv_object|
+      csv_object << @output_data.keys #headers
+      longest_column = @output_data.values.max_by(&:length) #table height
+      longest_column.each.with_index do |col_one_cell, index|
+        row = @output_data.values.map do |column|
+          column[index]
+        end
+        csv_object << row #data rows
+      end
+    end
+  end
 end
 
 ad_words_input = CSV.read(ARGV[0])
@@ -59,14 +72,4 @@ word_bank_data = CSV.read(ARGV[1], { headers: true,
 
 ad = AdWordScript.new(ad_words_input, word_bank_data)
 
-longest_column = ad.output_data.values.max_by(&:length)
-
-CSV.open('output_file.csv', 'w', headers: true) do |csv_object|
-  csv_object << ad.output_data.keys #headers
-  longest_column.each.with_index do |col_one_cell, index|
-    row = ad.output_data.values.map do |column|
-      column[index]
-    end
-    csv_object << row #data rows
-  end
-end
+ad.write_to_csv('output_file.csv')
