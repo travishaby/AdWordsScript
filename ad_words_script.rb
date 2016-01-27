@@ -74,6 +74,6 @@ ad_words_input = CSV.read(ARGV[0])
 word_bank_data = CSV.read(ARGV[1], { headers: true,
                            header_converters: :symbol })
 
-ad = AdWordScript.new(ad_words_input, word_bank_data)
+new_script = AdWordScript.new(ad_words_input, word_bank_data)
 
-ad.write_to_csv('output_file.csv')
+new_script.write_to_csv('output_file.csv')
