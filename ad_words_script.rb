@@ -1,9 +1,6 @@
 require 'csv'
 require 'pry'
 
-ad_words_input = CSV.read(ARGV[0])
-word_bank_data = CSV.read(ARGV[1], { headers: true,
-                           header_converters: :symbol })
 class AdWordScript
   attr_reader :ad_words_input,
               :word_bank_data
@@ -16,6 +13,7 @@ class AdWordScript
     @output_data = {unsorted: []}
     setup
     check_dictionaries_and_assign_to_categories
+    remove_duplicates
   end
 
   def setup
@@ -49,11 +47,17 @@ class AdWordScript
       end
     end
   end
+
+  def remove_duplicates
+    @output_data = @output_data.each { |cat, group| @output_data[cat] = group.uniq }
+  end
 end
 
-ad = AdWordScript.new(ad_words_input, word_bank_data)
+ad_words_input = CSV.read(ARGV[0])
+word_bank_data = CSV.read(ARGV[1], { headers: true,
+                           header_converters: :symbol })
 
-ad.output_data = ad.output_data.each { |cat, group| ad.output_data[cat] = group.uniq }
+ad = AdWordScript.new(ad_words_input, word_bank_data)
 
 longest_column = ad.output_data.values.max_by(&:length)
 
