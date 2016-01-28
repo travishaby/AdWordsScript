@@ -12,6 +12,13 @@ class AdWordsScriptTest < Minitest::Test
   def test_it_has_word_banks_stored
     category = :promo
     words_in_category = ["on sale", "discount", "cheap", "coupon"]
-    assert_equal @ad.word_banks[:promo], words_in_category
+    assert_equal @ad.word_banks[category], words_in_category
+  end
+
+  def test_it_has_output_hash_with_category_headers
+    headers = [:unsorted, :brand_terms, :item, :feature, :duty,
+               :competitor, :color, :material, :collection, :size,
+               :gender, :promo, :misspellings]
+    assert_equal @ad.output_data.keys, headers
   end
 end
