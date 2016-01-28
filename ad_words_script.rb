@@ -13,16 +13,14 @@ class AdWordScript
     @word_banks = {}
     @output_data = {unsorted: []}
     setup
-    check_dictionaries_and_assign_to_categories
-    remove_column_duplicates
   end
 
   def setup
-    @word_bank_data.headers.each do |header|
-      @word_banks[header] = @word_bank_data[header].compact.map(&:downcase)
+    word_bank_data.headers.each do |header|
+      word_banks[header] = word_bank_data[header].compact.map(&:downcase)
     end
-    @word_bank_data.headers.each do |header|
-      @output_data[header] = []
+    word_bank_data.headers.each do |header|
+      output_data[header] = []
     end
   end
 
@@ -57,6 +55,8 @@ class AdWordScript
   end
 
   def write_to_csv(file_name)
+    check_dictionaries_and_assign_to_categories
+    remove_column_duplicates
     CSV.open(file_name, 'w', headers: true) do |csv_object|
       csv_object << @output_data.keys #headers
       longest_column = @output_data.values.max_by(&:length) #table height
