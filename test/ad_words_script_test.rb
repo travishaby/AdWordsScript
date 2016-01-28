@@ -5,7 +5,7 @@ require './ad_words_script.rb'
 class AdWordsScriptTest < Minitest::Test
   def setup
     @ad = AdWordScript.new(CSV.read("InputFile.csv"),
-                           CSV.read("Columns.csv", { headers: true,
+                           CSV.read("./dictionaries/Columns.csv", { headers: true,
                                              header_converters: :symbol }))
   end
 
@@ -20,5 +20,12 @@ class AdWordsScriptTest < Minitest::Test
                :competitor, :color, :material, :collection, :size,
                :gender, :promo, :misspellings]
     assert_equal @ad.output_data.keys, headers
+  end
+
+  def test_entire_script_creates_desired_output
+    @ad.write_to_csv("./test/test_output_file.csv")
+    actual_output = CSV.read("./test/test_output_file.csv")
+    desired_output = CSV.read("./test/exemplar_output_file.csv")
+    assert_equal actual_output, desired_output
   end
 end
