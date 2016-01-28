@@ -27,12 +27,12 @@ class AdWordScript
   def check_dictionaries_and_assign_to_categories
     @ad_words_input.each do |ad_words|
       current_words = ad_words.first.split(" ")
-      remaining = current_words.clone
-      categorize_words(current_words, remaining)
+      categorize_words(current_words)
     end
   end
 
-  def categorize_words(current_words, remaining)
+  def categorize_words(current_words)
+    remaining = current_words.clone
     until remaining == []
       @word_banks.each do |type, ad_phrases|
         if ad_phrases.include?(current_words.join(" "))
