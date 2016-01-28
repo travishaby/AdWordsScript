@@ -6,6 +6,7 @@ class AdWordScript
               :word_bank_data
   attr_accessor :word_banks,
                 :output_data
+
   def initialize(ad_words_input, word_bank_data)
     @ad_words_input = ad_words_input
     @word_bank_data = word_bank_data
@@ -20,7 +21,6 @@ class AdWordScript
     @word_bank_data.headers.each do |header|
       @word_banks[header] = @word_bank_data[header].compact.map(&:downcase)
     end
-
     @word_bank_data.headers.each do |header|
       @output_data[header] = []
     end
@@ -70,10 +70,12 @@ class AdWordScript
   end
 end
 
-ad_words_input = CSV.read(ARGV[0])
-word_bank_data = CSV.read(ARGV[1], { headers: true,
-                           header_converters: :symbol })
+if __FILE__ == $0
+  ad_words_input = CSV.read(ARGV[0])
+  word_bank_data = CSV.read(ARGV[1], { headers: true,
+                             header_converters: :symbol })
 
-new_script = AdWordScript.new(ad_words_input, word_bank_data)
+  new_script = AdWordScript.new(ad_words_input, word_bank_data)
 
-new_script.write_to_csv('output_file.csv')
+  new_script.write_to_csv('output_file.csv')
+end
