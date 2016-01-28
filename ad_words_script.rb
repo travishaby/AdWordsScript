@@ -38,7 +38,7 @@ class AdWordScript
         if ad_phrases.include?(current_words.join(" "))
           @output_data[type] = @output_data[type] << current_words.join(" ")
           remaining = remaining - current_words
-          current_words = remaining.clone # re-run with words not yet sorted
+          current_words = remaining.clone #re-run with words not yet sorted
         end
       end
       if current_words.length == 1 #put unclassified single words in unsorted
