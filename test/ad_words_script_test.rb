@@ -24,6 +24,7 @@ class AdWordsScriptTest < Minitest::Test
 
   def test_sorting_of_words_into_categories_before_filtering_for_uniqueness
     @ad.check_dictionaries_and_assign_to_categories
+
     sorted_duty_words = @ad.output_data[:duty]
     sorted_product_feature_words = @ad.output_data[:feature]
     expected_duty_words = ["work", "work", "work"]
@@ -31,6 +32,16 @@ class AdWordsScriptTest < Minitest::Test
 
     assert_equal expected_duty_words, sorted_duty_words
     assert_equal expected_product_feature_words, sorted_product_feature_words
+  end
+
+  def test_sorting_of_words_into_categories_and_removing_duplicates
+    @ad.check_dictionaries_and_assign_to_categories
+    @ad.remove_column_duplicates
+
+    sorted_duty_words = @ad.output_data[:duty]
+    expected_duty_words = ["work"]
+
+    assert_equal expected_duty_words, sorted_duty_words
   end
 
   def test_entire_script_creates_desired_output
