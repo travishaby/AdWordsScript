@@ -12,10 +12,10 @@ class AdWordScript
     @word_bank_data = word_bank_data
     @word_banks = {}
     @output_data = {unsorted: []}
-    setup
+    setup_word_banks_and_output_data_storages
   end
 
-  def setup
+  def setup_word_banks_and_output_data_storages
     word_bank_data.headers.each do |header|
       word_banks[header] = word_bank_data[header].compact.map(&:downcase)
     end
@@ -38,7 +38,7 @@ class AdWordScript
         if ad_phrases.include?(current_words.join(" "))
           @output_data[type] = @output_data[type] << current_words.join(" ")
           remaining = remaining - current_words
-          current_words = remaining.clone
+          current_words = remaining.clone # re-run with words not yet sorted
         end
       end
       if current_words.length == 1 #put unclassified single words in unsorted
