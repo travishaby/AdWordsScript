@@ -12,7 +12,7 @@ class AdWordScript
     @ad_words_input = ad_words_input
     @dictionaries = dictionaries
     @word_banks = {}
-    @output_data = {unsorted: []}
+    @output_data = {WIP: []}
     setup_word_banks_and_output_data_storages
   end
 
@@ -58,10 +58,10 @@ class AdWordScript
       if current_words.length > 1
         current_words.pop
       elsif current_words == last_word_attempted
-        if @output_data[:unsorted][index]
-          @output_data[:unsorted][index] << " " + current_words.join(" ")
+        if @output_data[:WIP][index]
+          @output_data[:WIP][index] << " " + current_words.join(" ")
         else
-          @output_data[:unsorted][index] = current_words.join(" ")
+          @output_data[:WIP][index] = current_words.join(" ")
         end
         remaining = remaining - current_words
         current_words = remaining.clone # re-run with words not yet sorted
@@ -72,10 +72,11 @@ class AdWordScript
   def write_to_csv(file_name)
     check_dictionaries_and_assign_to_categories
     CSV.open(file_name, 'w', headers: true) do |csv_object|
-      csv_object << @output_data.keys #headers
+      csv_object << ["Original AdWords"] + @output_data.keys #headers
       longest_column = @output_data.values.max_by(&:length) #table height
       longest_column.each.with_index do |col_one_cell, index|
-        row = @output_data.values.map do |column|
+        row = ad_words_input[index]
+        row += @output_data.values.map do |column|
           column[index]
         end
         csv_object << row #data rows
