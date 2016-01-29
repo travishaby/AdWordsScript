@@ -10,6 +10,7 @@ class AdWordScript
   def initialize(ad_words_input, word_bank_data)
     @ad_words_input = ad_words_input
     @word_bank_data = word_bank_data
+    binding.pry
     @word_banks = {}
     @output_data = {unsorted: []}
     setup_word_banks_and_output_data_storages
@@ -25,38 +26,43 @@ class AdWordScript
   end
 
   def check_dictionaries_and_assign_to_categories
-    @ad_words_input.each do |ad_words|
+    @ad_words_input.each.with_index do |ad_words, index|
       current_words = ad_words.first.split(" ")
-      categorize_words(current_words)
+      categorize_words(current_words, index)
+      @output_data.each do |output_type, output_words|
+        output_words[index] = nil unless output_words[index]
+      end
     end
   end
 
-  def categorize_words(current_words)
+  def categorize_words(current_words, index)
     remaining = current_words.clone
+    last_word_attempted = ""
     until remaining == []
+      last_word_attempted = current_words.clone
       @word_banks.each do |type, ad_phrases|
         if ad_phrases.include?(current_words.join(" "))
-          @output_data[type] = @output_data[type] << current_words.join(" ")
+          @output_data[type] << current_words.join(" ")
           remaining = remaining - current_words
-          current_words = remaining.clone #re-run with words not yet sorted
+          current_words = remaining.clone # re-run with words not yet sorted
         end
       end
-      if current_words.length == 1 #put unclassified single words in unsorted
-        @output_data[:unsorted] = @output_data[:unsorted] + current_words
-        remaining = []
-      else
+      if current_words.length > 1
         current_words.pop
+      elsif current_words == last_word_attempted
+        if @output_data[:unsorted][index]
+          @output_data[:unsorted][index] << " " + current_words.join(" ").capitalize
+        else
+          @output_data[:unsorted][index] = current_words.join(" ").capitalize
+        end
+        remaining = remaining - current_words
+        current_words = remaining.clone # re-run with words not yet sorted
       end
     end
-  end
-
-  def remove_column_duplicates
-    @output_data.each { |cat, group| @output_data[cat] = group.uniq }
   end
 
   def write_to_csv(file_name)
     check_dictionaries_and_assign_to_categories
-    remove_column_duplicates
     CSV.open(file_name, 'w', headers: true) do |csv_object|
       csv_object << @output_data.keys #headers
       longest_column = @output_data.values.max_by(&:length) #table height
