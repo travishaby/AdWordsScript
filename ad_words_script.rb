@@ -1,27 +1,34 @@
+require 'RubyXL'
 require 'csv'
 require 'pry'
 
 class AdWordScript
   attr_reader :ad_words_input,
-              :word_bank_data
+              :dictionaries
   attr_accessor :word_banks,
                 :output_data
 
-  def initialize(ad_words_input, word_bank_data)
+  def initialize(ad_words_input, dictionaries)
     @ad_words_input = ad_words_input
-    @word_bank_data = word_bank_data
-    binding.pry
+    @dictionaries = dictionaries
     @word_banks = {}
     @output_data = {unsorted: []}
     setup_word_banks_and_output_data_storages
   end
 
   def setup_word_banks_and_output_data_storages
-    word_bank_data.headers.each do |header|
-      word_banks[header] = word_bank_data[header].compact.map(&:downcase)
-    end
-    word_bank_data.headers.each do |header|
-      output_data[header] = []
+    dictionaries.worksheets.each { |sheet|
+      sheet.each{ |row|
+        if !@word_banks[sheet.sheet_name]
+          @word_banks[sheet.sheet_name] = {}
+        else
+          @word_banks[sheet.sheet_name][row.cells[0].value] = row.cells[1].value
+        end
+      }
+    }
+    dictionaries.worksheets.each do |sheet|
+      output_category = sheet.sheet_name.gsub(' Dictionary', '')
+      output_data[output_category] = []
     end
   end
 
@@ -41,8 +48,9 @@ class AdWordScript
     until remaining == []
       last_word_attempted = current_words.clone
       @word_banks.each do |type, ad_phrases|
-        if ad_phrases.include?(current_words.join(" "))
-          @output_data[type] << current_words.join(" ")
+        if ad_phrases.keys.include?(current_words.join(" "))
+          output_type = type.gsub(' Dictionary', '')
+          @output_data[output_type] << ad_phrases[current_words.join(" ")]
           remaining = remaining - current_words
           current_words = remaining.clone # re-run with words not yet sorted
         end
@@ -51,9 +59,9 @@ class AdWordScript
         current_words.pop
       elsif current_words == last_word_attempted
         if @output_data[:unsorted][index]
-          @output_data[:unsorted][index] << " " + current_words.join(" ").capitalize
+          @output_data[:unsorted][index] << " " + current_words.join(" ")
         else
-          @output_data[:unsorted][index] = current_words.join(" ").capitalize
+          @output_data[:unsorted][index] = current_words.join(" ")
         end
         remaining = remaining - current_words
         current_words = remaining.clone # re-run with words not yet sorted
@@ -78,10 +86,9 @@ end
 
 if __FILE__ == $0
   ad_words_input = CSV.read(ARGV[0])
-  word_bank_data = CSV.read(ARGV[1], { headers: true,
-                             header_converters: :symbol })
+  dictionaries = RubyXL::Parser.parse(ARGV[1])
 
-  new_script = AdWordScript.new(ad_words_input, word_bank_data)
+  new_script = AdWordScript.new(ad_words_input, dictionaries)
 
   new_script.write_to_csv('output_file.csv')
 end

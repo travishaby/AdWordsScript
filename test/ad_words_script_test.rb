@@ -5,8 +5,7 @@ require './ad_words_script.rb'
 class AdWordsScriptTest < Minitest::Test
   def setup
     @ad = AdWordScript.new(CSV.read("InputFile.csv"),
-                           CSV.read("./dictionaries/Columns.csv", { headers: true,
-                                             header_converters: :symbol }))
+                           RubyXL::Parser.parse("./dictionaries/NewDictionary.xlsx")
   end
 
   def test_it_has_word_banks_stored
