@@ -75,7 +75,7 @@ class AdWordScript
       csv_object << ["Original AdWords"] + @output_data.keys #headers
       longest_column = @output_data.values.max_by(&:length) #table height
       longest_column.each.with_index do |col_one_cell, index|
-        row = ad_words_input[index]
+        row = ad_words_input[index] || []
         row += @output_data.values.map do |column|
           column[index]
         end
