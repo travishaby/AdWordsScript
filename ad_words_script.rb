@@ -17,15 +17,23 @@ class AdWordScript
   end
 
   def setup_word_banks_and_output_data_storages
-    dictionaries.worksheets.each { |sheet|
-      sheet.each{ |row|
+    setup_word_banks
+    setup_output_data_stores
+  end
+
+  def setup_word_banks
+    dictionaries.worksheets.each do |sheet|
+      sheet.each do |row|
         if !@word_banks[sheet.sheet_name]
           @word_banks[sheet.sheet_name] = {}
         else
           @word_banks[sheet.sheet_name][row.cells[0].value] = row.cells[1].value
         end
-      }
-    }
+      end
+    end
+  end
+
+  def setup_output_data_stores
     dictionaries.worksheets.each do |sheet|
       output_category = sheet.sheet_name.gsub(' Dictionary', '')
       output_data[output_category] = []
@@ -34,38 +42,47 @@ class AdWordScript
 
   def check_dictionaries_and_assign_to_categories
     @ad_words_input.each.with_index do |ad_words, index|
-      current_words = ad_words.first.split(" ")
+      current_words = ad_words.first
       categorize_words(current_words, index)
-      @output_data.each do |output_type, output_words|
-        output_words[index] = nil unless output_words[index]
-      end
+      fill_in_blanks(index)
     end
   end
 
   def categorize_words(current_words, index)
     remaining = current_words.clone
     last_word_attempted = ""
-    until remaining == []
+    until remaining == ""
       last_word_attempted = current_words.clone
       @word_banks.each do |type, ad_phrases|
-        if ad_phrases.keys.include?(current_words.join(" "))
+        match = find_ad_phrase_matches(ad_phrases.keys, current_words)
+        if match
           output_type = type.gsub(' Dictionary', '')
-          @output_data[output_type] << ad_phrases[current_words.join(" ")]
-          remaining = remaining - current_words
+          @output_data[output_type] << ad_phrases[match]
+          remaining = " #{current_words} ".sub(" #{match} ", " ").split.join(" ")
           current_words = remaining.clone # re-run with words not yet sorted
         end
       end
-      if current_words.length > 1
-        current_words.pop
-      elsif current_words == last_word_attempted
+      if current_words == last_word_attempted
         if @output_data[:WIP][index]
-          @output_data[:WIP][index] << " " + current_words.join(" ")
+          @output_data[:WIP][index] << " " + current_words
         else
-          @output_data[:WIP][index] = current_words.join(" ")
+          @output_data[:WIP][index] = current_words
         end
-        remaining = remaining - current_words
-        current_words = remaining.clone # re-run with words not yet sorted
+        remaining = remaining.sub(current_words, "")
+        current_words = remaining.clone
       end
+    end
+  end
+
+  def find_ad_phrase_matches(phrases, current_words)
+    phrases.detect do |phrase|
+      !" #{current_words} ".scan(" #{phrase} ").empty?
+    end
+  end
+
+  def fill_in_blanks(index)
+    @output_data.each do |output_type, output_words|
+      output_words[index] = nil unless output_words[index]
     end
   end
 
