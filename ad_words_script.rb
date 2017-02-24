@@ -108,5 +108,6 @@ if __FILE__ == $0
 
   new_script = AdWordScript.new(ad_words_input, dictionaries)
 
-  new_script.write_to_csv('output_file.csv')
+  file_name = ARGV[2] || 'output_file.csv'
+  new_script.write_to_csv(file_name)
 end
