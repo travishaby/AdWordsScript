@@ -55,11 +55,13 @@ class AdWordScript
       last_word_attempted = current_words.clone
       @word_banks.each do |type, ad_phrases|
         match = find_ad_phrase_matches(ad_phrases.keys, current_words)
-        if match
+        if match.any?
           output_type = type.gsub(' Dictionary', '')
-          @output_data[output_type] << ad_phrases[match]
-          remaining = " #{current_words} ".sub(" #{match} ", " ").split.join(" ")
-          current_words = remaining.clone # re-run with words not yet sorted
+          @output_data[output_type] << select_matching_words_from_category(match, ad_phrases)
+          match.each do |word|
+            remaining = " #{current_words} ".sub(" #{word} ", " ").split.join(" ")
+            current_words = remaining.clone # re-run with words not yet sorted
+          end
         end
       end
       if current_words == last_word_attempted
@@ -74,8 +76,12 @@ class AdWordScript
     end
   end
 
+  def select_matching_words_from_category(matched_words, ad_phrases)
+    matched_words.map { |word| ad_phrases[word] }.uniq.sort.join(" - ") unless matched_words.empty?
+  end
+
   def find_ad_phrase_matches(phrases, current_words)
-    phrases.detect do |phrase|
+    phrases.select do |phrase|
       !" #{current_words} ".scan(" #{phrase} ").empty?
     end
   end
